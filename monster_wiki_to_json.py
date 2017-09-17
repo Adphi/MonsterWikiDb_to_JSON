@@ -1,4 +1,21 @@
-def init(path):
+#! /usr/bin/env python3
+# coding: utf-8
+
+
+map_element = {
+    't' : 'Thunder',
+    'w' : 'Water',
+    'f' : 'Fire',
+    'n' : 'Nature',
+    'm' : 'Magic',
+    'mt': 'Metal',
+    'l' : 'Light',
+    'd' : 'Dark',
+    'e' : 'Earth'
+}
+
+
+def main():
     from requests import get
     import bs4 as bs
     import json
@@ -34,8 +51,6 @@ def init(path):
         monster_code = monster['code']
 
         monsters_data[monster_code] = {}
-        monsters_data[monster_code]['elements'] = monster['elements']
-        monsters_data[monster_code]['is_vip'] = monster['is_vip']
 
         # Monster Page Scrapping
         monster_url = site_url + monster_code
@@ -58,28 +73,24 @@ def init(path):
         monsters_data[monster_code]['level_data'] = decode_data_levels
         raw_stamina = soup.findAll("span", {'class':'stats-value-stamina'})
         monsters_data[monster_code]['level_data']['stamina'] = raw_stamina[0].string
+        monsters_data[monster_code]['is_vip'] = monster['is_vip']
+
+        # Format Elements Names
+        monsters_data[monster_code]['elements'] = monster['elements']
+        for index, element in enumerate(monsters_data[monster_code]['elements']):
+            monsters_data[monster_code]['elements'][index] = map_element[element]
 
         # Progression
         monster_count += 1
         progress = round(monster_count / monsters_count_total * 100, 2)
-        print("Progess : {} %    ".format(str(progress)), end='\r')
+        print("Progress : {} %    ".format(str(progress)), end='\r')
 
     # Dump Database into File
     file_name = 'monster-wiki-db.json'
     print("Duming Database into file: " + path + file_name)
-    with open(path + file_name, 'w') as out:
+    with open(file_name, 'w') as out:
         json.dump(monsters_data, out)
     print('Done')
 
 if __name__ == '__main__':
-
-    import sys
-    args = sys.argv
-
-    if len(args) == 1:
-        path = ''
-    else:
-        input_path = str(sys.argv[1])
-        path = input_path if input_path.endswith('/') else input_path + '/'
-
-    init(path)
+    main()
