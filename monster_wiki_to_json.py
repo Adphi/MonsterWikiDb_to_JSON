@@ -89,7 +89,7 @@ def main():
 
     # Dump Database into File
     file_name = 'monster-wiki-db.json'
-    print("Duming Database into file: " + path + file_name)
+    print("Duming Database into file: " + file_name)
     with open(file_name, 'w') as out:
         json.dump(monsters_data, out)
     print('Done')
