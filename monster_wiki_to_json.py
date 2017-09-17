@@ -11,7 +11,8 @@ map_element = {
     'mt': 'Metal',
     'l' : 'Light',
     'd' : 'Dark',
-    'e' : 'Earth'
+    'e' : 'Earth',
+    's' : 'Legendary'
 }
 
 
@@ -41,19 +42,19 @@ def main():
 
     # Init output Dictionary
     monsters_data = {}
+    monsters_data['monsters'] = []
 
     # Progression Indicator Values
     monsters_count_total = len(response.json()['result'])
     monster_count = 0
 
-    for monster in response.json()['result'] :
-
-        monster_code = monster['code']
-
-        monsters_data[monster_code] = {}
+    for monster_src in response.json()['result'] :
+        monster = {}
+        monster['code'] = monster_src['code']
+        monster['name'] = monster_src['name']
 
         # Monster Page Scrapping
-        monster_url = site_url + monster_code
+        monster_url = site_url + monster['code']
         monster_html = get(monster_url)
         soup =bs.BeautifulSoup(monster_html.text, 'html.parser')
         data = soup.findAll("input", {"id": "monster_level_stat"})
@@ -70,16 +71,17 @@ def main():
                 decode_data_levels[key].append(decode_value)
 
         # Dump Data in Dictionary
-        monsters_data[monster_code]['level_data'] = decode_data_levels
+        monster['levels_data'] = decode_data_levels
         raw_stamina = soup.findAll("span", {'class':'stats-value-stamina'})
-        monsters_data[monster_code]['level_data']['stamina'] = raw_stamina[0].string
-        monsters_data[monster_code]['is_vip'] = monster['is_vip']
+        monster['levels_data']['stamina'] = raw_stamina[0].string
+        monster['is_vip'] = monster_src['is_vip']
 
         # Format Elements Names
-        monsters_data[monster_code]['elements'] = monster['elements']
-        for index, element in enumerate(monsters_data[monster_code]['elements']):
-            monsters_data[monster_code]['elements'][index] = map_element[element]
+        monster['elements'] = monster_src['elements']
+        for index, element in enumerate(monster['elements']):
+            monster['elements'][index] = map_element[element]
 
+        monsters_data['monsters'].append(monster)
         # Progression
         monster_count += 1
         progress = round(monster_count / monsters_count_total * 100, 2)
